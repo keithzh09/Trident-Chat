@@ -28,10 +28,15 @@ class client:
 
     def on_message(self, client, userdata, msg):
         self.login(msg)
-        self.client._thread_terminate = True
-        # self.client.unsubscribe('lii')
-        # self.client.subscribe('lii')
-        self.client._thread_terminate = False
+        # self.client._thread_terminate = True
+        # # self.client.unsubscribe('lii')
+        # # self.client.subscribe('lii')
+        # self.client._thread_terminate = False
+        data = {'token': 'sadsaasdas'}
+        for i in range(5):
+            self.client.publish('lii', str(data).encode(), 1)
+            print('publish sorry')
+            self.client.publish('mqtt', str(data).encode(), 1)
 
     def start(self):
         self.client.on_connect = self.on_connect
@@ -47,7 +52,7 @@ class client:
         # client2.connect(HOST, PORT, 60)
         # self.client.loop()
         data = {'token': 'sadsaasdas'}
-        for i in range(5):
+        for i in range(1):
             self.client.publish('lii', str(data).encode(), 1)
             print('publish sorry')
             self.client.publish('mqtt', str(data).encode(), 1)

@@ -54,7 +54,8 @@ class MainFrame(Frame):
 
         # 布局
         self.field_2_t_scrollbar.pack(fill="y", side=RIGHT, anchor=W)
-        self.field_2_text.pack(fill="y", expand=1, side=BOTTOM)
+        # 设置文本框自适应大小
+        self.field_2_text.pack(fill="x", expand=1, side=BOTTOM)
 
         # 绑定事件
         self.field_2_text.bind("<Control-Key-a>", self.select_text)
@@ -82,8 +83,11 @@ class MainFrame(Frame):
                 note = self.client.latest_notes_queue.get()
                 msg1 = ('%-20s%s' % (note[0], note[2]))
                 self.field_1_listbox.insert(END, msg1, note[1])
+                self.field_1_listbox.insert(END, ' ')
+                # 滚动到最下面
+                self.field_1_listbox.yview_moveto(1)
             if self.client.is_user_logout:
-                exit()
+                break
 
     def monitor_all_notes(self):
         while True:
@@ -93,6 +97,8 @@ class MainFrame(Frame):
                     # note格式: eg.['lin', 'Hello World!', '2019-06-05 00:34:53']
                     msg1 = ('%-20s%s' % (note[0], note[2]))
                     self.field_1_listbox.insert(END, msg1, note[1])
+                    self.field_1_listbox.insert(END, ' ')
+                self.field_1_listbox.yview_moveto(1)
                 break
 
     def update_notes(self):
@@ -119,22 +125,26 @@ class MainFrame(Frame):
 
     def send_one_msg(self):
         msg = self.field_2_text.get(0.0, END)[:-1]
-        # t1 = Thread(target=self.client.start_loop, args=('chat', None, msg, ))
-        # t1.start()
-        self.client.operate(order='chat', msg=msg)
-        self.field_2_text.delete(0.0, END)
+        if len(msg) > 0:
+            # 输入不为空时才可以
+            # t1 = Thread(target=self.client.start_loop, args=('chat', None, msg, ))
+            # t1.start()
+            self.client.operate(order='chat', msg=msg)
+            self.field_2_text.delete(0.0, END)
 
 
 class MainApp:
 
     def __init__(self, client):
         self.client = client
+        self.is_user_logout = False
         self.received_client = Client(self.client.user_name)
         self.root = Tk()
-        self.root.title('Hang Chat')
+        self.root.title('Trident Chat')
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        self.root.geometry('800x610')  # 设置了主窗口的初始大小960x540 800x450 640x360
+        # 设置了主窗口的初始大小和放的位置
+        self.root.geometry('800x610+600+200')
         self.menu = Menu(self.root)  # 参数是父级控件
         self.main_frame = MainFrame(self.client, self.root)
         self.create_app()
@@ -146,7 +156,6 @@ class MainApp:
 
         cascade0.add_separator()  # 分割线
         # cascade0.add_checkbutton(label="在不调试的情况下启动")  # 单选框
-        # todo: 看看有没有可以修改的地方
         for i in range(len(self.client.all_rooms)):
             if i == 0:
                 cascade0.add_radiobutton(label=self.client.all_rooms[i],
@@ -162,8 +171,9 @@ class MainApp:
         self.menu.add_cascade(label='聊天室', menu=cascade0)  # 在menu0中添加一个label为项目的级联菜单
 
         cascade1 = Menu(self.menu, tearoff=False)
-        for x in ['注销', '退出']:
-            cascade1.add_command(label=x, command=self.lab)
+
+        cascade1.add_command(label='注销', command=self.logout)
+        cascade1.add_command(label='退出', command=self.exit_it)
 
         self.menu.add_cascade(label='用户', menu=cascade1)
 
@@ -172,15 +182,19 @@ class MainApp:
         self.main_frame.mainloop()
 
     def choose_room(self, room_name):
+        # 获取上一个房间名，是为了取消订阅
         last_room_name = self.client.room_name
         self.client.room_name = room_name
         self.client.receive_latest_note(last_room_name)
         self.main_frame.room_name.set(room_name)
         self.main_frame.send_and_clear_text()
 
-    def lab(self):
-        exit()
+    def exit_it(self):
+        self.client.is_user_logout = True
+        self.root.destroy()
 
-
-
+    def logout(self):
+        self.client.is_user_logout = True
+        self.root.destroy()
+        self.is_user_logout = True
 

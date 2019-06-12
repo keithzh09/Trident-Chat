@@ -8,13 +8,13 @@ from threading import Thread, Event
 from APP.textbox import MainApp
 
 
-class Demo1:
+class LoginDemo:
     def __init__(self):
         self.client = Client('', '')
         t = Thread(target=self.client.start_loop)
         t.start()
         msg = "输入账户密码呢亲"
-        title = "Hang Chat Application"
+        title = "Login"
         field_names = ["用户名", "密码"]
         field_values = []  # we start with blanks for the values
 
@@ -51,14 +51,14 @@ class Demo1:
         box.msg = "\n".join(errors)
 
 
-class Demo2:
+class RegisterDemo:
 
     def __init__(self):
         self.client = Client('', '')
         t = Thread(target=self.client.start_loop)
         t.start()
         msg = "输入账户密码呢亲"
-        title = "Hang Chat Application"
+        title = "Register"
         field_names = ["用户名", "密码", "项目标识"]
         field_values = []  # we start with blanks for the values
         field_values = gui.multpasswordbox(msg, title, field_names, field_values,
@@ -90,17 +90,33 @@ class Demo2:
             errors = [self.client.register_msg]
             # self.client.stop_loop()
             if self.client.is_register_succeeded:  # 登录成功
+                self.client.stop_loop()
                 box.stop()  # no problems found
 
         box.msg = "\n".join(errors)
 
 
+def login():
+    login_demo = LoginDemo()
+    if login_demo.client.is_login_succeeded:
+        app = MainApp(login_demo.client)
+        if app.is_user_logout:
+            login_demo.client.stop_loop()
+            login()
+    login_demo.client.stop_loop()
+
+
+def register():
+    register_demo = RegisterDemo()
+    register_demo.client.stop_loop()
+    if register_demo.client.is_register_succeeded:
+        login()
+
+
 if __name__ == '__main__':
     ret = gui.buttonbox(image='timg.gif',
-                        title='fuck', choices=(['登录', '注册']))
+                        title='HELLO WORLD', choices=(['登录', '注册']))
     if ret == '登录':
-        demo1 = Demo1()
-        MainApp(demo1.client)
-
+        login()
     elif ret == '注册':
-        Demo2()
+        register()
