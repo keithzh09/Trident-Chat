@@ -1,0 +1,29 @@
+version: "2"
+services:
+    redis:
+        image: redis:latest
+        volumes:
+          - ./redisData/:/data:rw
+    python3.6:
+        image: python:3.6
+        volumes:
+         - "./code_source/:/data/:rw"
+         - "./conf/python/.pip/:/root/.pip/:ro"
+        #  - "./static/:/static/:rw"
+        environment:
+          - TZ=Asia/Shanghai
+        links:
+         - redis:redis
+        depends_on:
+        #  - mysql
+         - redis
+        working_dir: /data
+        restart: always
+        command: 
+         - /bin/sh
+         - -c
+         - |
+                pip3 install -r requirements.txt
+                python3 test.py
+
+

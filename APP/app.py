@@ -113,10 +113,3 @@ def register():
         login()
 
 
-if __name__ == '__main__':
-    ret = gui.buttonbox(image='timg.gif',
-                        title='HELLO WORLD', choices=(['登录', '注册']))
-    if ret == '登录':
-        login()
-    elif ret == '注册':
-        register()

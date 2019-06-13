@@ -1,13 +1,13 @@
 # coding: utf-8
 # @author  : lin
-# @time    : 2019/4/25
+# @time    : 2019/6/3
 
 import paho.mqtt.client as mqtt
 from .dao import ServerDao
-from config.topic_config import TOPIC_PARAMS, PROJECT_CODE, HOST, PORT
+from config.topic_config import PROJECT_CODE, HOST, PORT
 from lib.dao import LibDao
 from db_model.model_dao import UserModelDao, ChatRoomsModelDao, ChatNotesModelDao
-from threading import Thread, Lock
+from threading import Lock
 
 
 class Server:

@@ -98,7 +98,8 @@ class MainFrame(Frame):
                     msg1 = ('%-20s%s' % (note[0], note[2]))
                     self.field_1_listbox.insert(END, msg1, note[1])
                     self.field_1_listbox.insert(END, ' ')
-                self.field_1_listbox.yview_moveto(1)
+                    self.field_1_listbox.yview_moveto(1)
+
                 break
 
     def update_notes(self):

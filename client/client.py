@@ -5,10 +5,8 @@
 
 import paho.mqtt.client as mqtt
 from .dao import ClientDao
-from config.topic_config import TOPIC_PARAMS, PROJECT_CODE, HOST, PORT
+from config.topic_config import HOST, PORT
 from lib.dao import LibDao
-from db_model.model_dao import UserModelDao, ChatRoomsModelDao, ChatNotesModelDao
-from multiprocessing import Process
 from queue import Queue
 import datetime
 import threading
@@ -27,13 +25,14 @@ class Client:
         self.all_notes = list()
         self.latest_notes_queue = Queue()
         self.is_login_succeeded = False  # 是否登录成功
-        self.is_register_succeeded = False
-        self.is_get_all_notes_succeeded = False
-        self.is_publish_news_succeeded = False
-        self.is_user_logout = False
+        self.is_register_succeeded = False  # 是否注册成功
+        self.is_get_all_notes_succeeded = False  # 是否获取所有信息成功
+        self.is_publish_news_succeeded = False  # 是否发布成功
+        self.is_user_logout = False  # 用户是否退出
         self.lock = threading.Lock()
         self.loop_num = 0
         self.start_evt = None  # 这是一个Event对象，用来查看是否验证成功
+        # handle_func是指明接收数据后，靠数据包含字段来区分信息
         self.handle_func = {'login_msg': self.get_login_msg, 'register_msg': self.get_register_msg,
                             'all_notes': self.get_all_notes, 'latest_note': self.get_latest_note,
                             'error_msg': self.get_error_msg}
@@ -62,12 +61,11 @@ class Client:
         """
         使用client._thread_terminate来控制这个线程的开启和关闭
         :param order:
-        :param start_evt: 线程控制的一个变量
+        :param start_evt: 线程控制的一个变量，当该变量执行set方法时，表明子线程需要执行的任务已经完成（子线程不一定退出）
+        :param msg: 只有命令为chat时才需要传入
         :return:
         """
-        global loop_num, lock
         self.start_evt = start_evt
-        # self.client._thread_terminate = False
         if order == 'login':
             self.is_login_succeeded = False
             self.send_login_msg()
@@ -150,8 +148,6 @@ class Client:
         print(data['error_msg'])
         self.is_user_logout = True
 
-    # 靠数据包含字段来区分
-
     def on_message(self, client, userdata, msg):
         # 规定传入数据均为dict的形式
         data = eval(msg.payload.decode('utf-8'))
@@ -161,4 +157,3 @@ class Client:
                     print(data)
                 func = self.handle_func[i]
                 func(data)
-                # self.get_token(data)

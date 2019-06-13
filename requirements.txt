@@ -2,4 +2,4 @@ peewee==3.8.2
 paho-mqtt==1.4.0
 redis==3.1.0
 easygui==0.98.1
-pymysql
+pymysql==0.9.3
