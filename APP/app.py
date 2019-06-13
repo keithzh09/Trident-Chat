@@ -23,12 +23,12 @@ class LoginDemo:
         print("Reply was: {}".format(field_values))
 
     def check_for_blank_fields(self, box):
-        # make sure that none of the fields was left blank
+        # 保证输入框用户名和密码均不能为空
         cancelled = box.values is None
         errors = []
         if cancelled:
             pass
-        else:  # check for errors
+        else:
             for name, value in zip(box.fields, box.values):
                 if value.strip() == "":
                     errors.append('"{}" 不可为空.'.format(name))
@@ -38,17 +38,21 @@ class LoginDemo:
         if cancelled or all_ok:
             self.client.user_name = box.values[0]
             self.client.user_pwd = box.values[1]
-            start_evt = Event()
-            t = Thread(target=self.client.operate, args=('login', start_evt))
+            # 另开一个线程监听服务端返回信息，不阻塞当前线程
+            t = Thread(target=self.receive_login_msg, args=(box, ))
             t.start()
-            # self.client.operate(order='login', start_evt=start_evt)
-            # 阻塞，直到有结果
-            start_evt.wait()
-            errors = [self.client.login_msg]
-            if self.client.is_login_succeeded:  # 登录成功
-                box.stop()  # no problems found
-
         box.msg = "\n".join(errors)
+
+    def receive_login_msg(self, box):
+        start_evt = Event()
+        t = Thread(target=self.client.operate, args=('login', start_evt))
+        t.start()
+        # 阻塞，直到有结果
+        start_evt.wait()
+        errors = [self.client.login_msg]
+        box.msg = "\n".join(errors)
+        if self.client.is_login_succeeded:  # 登录成功
+            box.stop()
 
 
 class RegisterDemo:
@@ -66,12 +70,11 @@ class RegisterDemo:
         print("Reply was: {}".format(field_values))
 
     def check_for_blank_fields(self, box):
-        # make sure that none of the fields was left blank
         cancelled = box.values is None
         errors = []
         if cancelled:
             pass
-        else:  # check for errors
+        else:
             for name, value in zip(box.fields, box.values):
                 if value.strip() == "":
                     errors.append('"{}" 不可为空.'.format(name))
@@ -82,18 +85,23 @@ class RegisterDemo:
             self.client.user_name = box.values[0]
             self.client.user_pwd = box.values[1]
             self.client.project_code = box.values[2]
-            start_evt = Event()
-            t = Thread(target=self.client.operate, args=('register', start_evt))
+            # 重开一个线程等待服务端返回信息，不阻塞当前线程
+            t = Thread(target=self.receive_register_msg, args=(box, ))
             t.start()
-            # 阻塞，直到有结果
-            start_evt.wait()
-            errors = [self.client.register_msg]
-            # self.client.stop_loop()
-            if self.client.is_register_succeeded:  # 登录成功
-                self.client.stop_loop()
-                box.stop()  # no problems found
 
         box.msg = "\n".join(errors)
+
+    def receive_register_msg(self, box):
+        start_evt = Event()
+        t = Thread(target=self.client.operate, args=('register', start_evt))
+        t.start()
+        # 阻塞，直到有结果
+        start_evt.wait()
+        errors = [self.client.register_msg]
+        box.msg = "\n".join(errors)
+        if self.client.is_register_succeeded:  # 登录成功
+            self.client.stop_loop()
+            box.stop()
 
 
 def login():

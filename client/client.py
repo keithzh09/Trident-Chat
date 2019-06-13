@@ -60,8 +60,9 @@ class Client:
     def operate(self, order, start_evt=None, msg=None):
         """
         使用client._thread_terminate来控制这个线程的开启和关闭
-        :param order:
-        :param start_evt: 线程控制的一个变量，当该变量执行set方法时，表明子线程需要执行的任务已经完成（子线程不一定退出）
+        :param order: 指令名称
+        :param start_evt: 线程控制的一个变量，当该变量执行set方法时，
+                          表明子线程需要执行的任务已经完成（子线程不一定退出）
         :param msg: 只有命令为chat时才需要传入
         :return:
         """
@@ -79,7 +80,7 @@ class Client:
             self.send_one_msg(msg)
 
     def send_login_msg(self):
-        # 设置标识
+        # 设置标识，标示唯一一个用户，监听这个标识，直到收到回信
         self.token_key = self.user_name + datetime.datetime.now().strftime('%H:%M:%S')
         self.client.subscribe(self.token_key)
         ClientDao.publish_login(self.client, self.user_name, self.user_pwd, self.token_key)
@@ -123,7 +124,7 @@ class Client:
             self.is_login_succeeded = False
             # 取消订阅
             self.client.unsubscribe(self.user_name)
-        # 收到登录回信
+        # 收到登录回信，变量调用set()函数，表示这个子线程已经执行到了该执行的位置
         self.start_evt.set()
 
     def get_register_msg(self, data):

@@ -76,20 +76,20 @@ class MainFrame(Frame):
         t.start()
 
     def monitor_latest_note(self):
-        # 监控所有最新消息
-        # 监控当前用户是否已经失效
+        # 监控所有最新消息以及当前用户是否已经失效
         while True:
             if not self.client.latest_notes_queue.empty():
                 note = self.client.latest_notes_queue.get()
                 msg1 = ('%-20s%s' % (note[0], note[2]))
                 self.field_1_listbox.insert(END, msg1, note[1])
                 self.field_1_listbox.insert(END, ' ')
-                # 滚动到最下面
+                # 下拉框拉到最下面
                 self.field_1_listbox.yview_moveto(1)
             if self.client.is_user_logout:
                 break
 
     def monitor_all_notes(self):
+        #
         while True:
             if self.client.is_get_all_notes_succeeded:
                 self.field_1_listbox.delete(0, END)
@@ -99,7 +99,6 @@ class MainFrame(Frame):
                     self.field_1_listbox.insert(END, msg1, note[1])
                     self.field_1_listbox.insert(END, ' ')
                     self.field_1_listbox.yview_moveto(1)
-
                 break
 
     def update_notes(self):
